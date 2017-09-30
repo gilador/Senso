@@ -1,6 +1,5 @@
 package com.example.gilado.senso.main.view;
 
-import android.hardware.SensorEvent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -11,7 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.gilado.senso.R;
-import com.example.gilado.senso.main.IMain.IMainView;
+import com.example.gilado.senso.main.moduleInterface.IMain.IMainView;
 import com.example.gilado.senso.main.model.sensor.BaseSensor;
 import com.example.gilado.senso.main.view.adapter.SensorListAdapter;
 
@@ -72,7 +71,7 @@ public class MainView extends Fragment implements IMainView {
     }
 
     @Override
-    public void onSensorEvent(int sensorId, SensorEvent sensorEvent) {
+    public void onSensorEvent(int sensorId, String  sensorEvent) {
         //TODO update UI
     }
 

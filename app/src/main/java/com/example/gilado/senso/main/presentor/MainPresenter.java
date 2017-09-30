@@ -1,17 +1,15 @@
 package com.example.gilado.senso.main.presentor;
 
 import android.content.Context;
-import android.hardware.SensorEvent;
 import android.hardware.SensorManager;
 import android.os.Handler;
 import android.util.Log;
 
-import com.example.gilado.senso.main.IMain.IMainModel;
-import com.example.gilado.senso.main.IMain.IMainPresenter;
-import com.example.gilado.senso.main.IMain.IMainView;
+import com.example.gilado.senso.main.moduleInterface.IMain.IMainModel;
+import com.example.gilado.senso.main.moduleInterface.IMain.IMainPresenter;
+import com.example.gilado.senso.main.moduleInterface.IMain.IMainView;
 import com.example.gilado.senso.main.model.sensor.BaseSensor;
 import com.example.gilado.senso.main.model.sensor.ISensorObserver;
-import com.example.gilado.senso.main.view.MainView;
 
 import java.util.List;
 
@@ -57,6 +55,7 @@ public class MainPresenter implements IMainPresenter, ISensorObserver {
 
     @Override
     public void onViewResume() {
+        mMainModel.onResume();//TODO maybe should be in base class
         mMainModel.getSensorListObservable(mSensorManager, this).subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(baseSensors -> {
@@ -68,10 +67,12 @@ public class MainPresenter implements IMainPresenter, ISensorObserver {
 
     @Override
     public void onViewPause() {
+        mMainModel.onPause();  //TODO maybe should be in base class
         mMainModel.getSensorListObservable(mSensorManager, this).subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(baseSensors -> {
                     Log.d(TAG, "onViewPause->mMainModel.getSensorListObservable->subscribe->baseSensors size: " + baseSensors.size());
+                    //TODO: BUG - not working - it seems like two different instances
                     disconnectSensors(baseSensors);
                 });
     }
@@ -85,13 +86,13 @@ public class MainPresenter implements IMainPresenter, ISensorObserver {
     public void  onSensorTileSelected(BaseSensor sensor) {
         mMainModel.onSensorSelected(sensor.getId());
         sensor.setEnabled(true);
-        sensor.connect(mSensorManager);
+        sensor.connect(mSensorManager, mHandler);
         mMainView.onTileStateChanged(sensor.getId(), true);
     }
 
     @Override
     public void onSensorTileUnSelected(BaseSensor sensor) {
-        sensor.disconnect(mSensorManager);
+        sensor.disconnect(mSensorManager, mHandler);
         sensor.setEnabled(false);
         mMainModel.onSensorUnselected(sensor.getId());
         mMainView.onTileStateChanged(sensor.getId(), false);
@@ -103,7 +104,7 @@ public class MainPresenter implements IMainPresenter, ISensorObserver {
     //                                 Impl ISensorObserver
     //----------------------------------------------------------------------------------------------
     @Override
-    public void onSensorEvent(int sensorId, SensorEvent sensorEvent) {
+    public void onSensorEvent(int sensorId, String sensorEvent) {
         mMainView.onSensorEvent(sensorId, sensorEvent);
         mMainModel.onSensorEvent(sensorId, sensorEvent);
     }
@@ -115,7 +116,7 @@ public class MainPresenter implements IMainPresenter, ISensorObserver {
     private void connectSensors(List<BaseSensor> sensors) {
         for (BaseSensor sensor : sensors) {
             if (sensor.isEnabled()) {
-                sensor.connect(mSensorManager);
+                sensor.connect(mSensorManager, mHandler);
             }
         }
     }
@@ -123,49 +124,18 @@ public class MainPresenter implements IMainPresenter, ISensorObserver {
     private void disconnectSensors(List<BaseSensor> sensors) {
         for (BaseSensor sensor : sensors) {
             if (sensor.isEnabled()) {
-                sensor.disconnect(mSensorManager);
+                sensor.disconnect(mSensorManager, mHandler);
             }
         }
     }
 
-//    private Observable<Collection<BaseSensor>> getBaseSensorsObservable() {
-//        return Observable.zip(
-//                mMainModel.getSensorListObservable(mSensorManager, this),
-//                mMainModel.getSelectedSensors(),
-//                (generalSensorsList, selectedSensorsList) -> {
-//                    Map<Integer, BaseSensor> sensorsMap = new LinkedHashMap<>();
-//                    for (BaseSensor baseSensor : generalSensorsList) {
-//                        sensorsMap.put(baseSensor.getId(), baseSensor);
-//                    }
-//
-//                    for (BaseSensor baseSensor : selectedSensorsList) {
-//                        boolean isSelected = sensorsMap.containsKey(baseSensor.getSensor().getType());
-//                        sensorsMap.get(baseSensor.getId()).setEnabled(isSelected);
-//                    }
-//
-//                    return sensorsMap.values();
-//                });
-//    }
+    @Override
+    public Context getContext() {
+        return mContext;
+    }
 
-//    private Single<List<BaseSensor>> getSensorListObservable() {
-//        Single<List<BaseSensor>> listSingle = Single.create((SingleOnSubscribe<List<BaseSensor>>) e -> {
-//            SensorManager    sensorManager = (SensorManager) mContext.getSystemService(SENSOR_SERVICE);
-//            List<Sensor>     sensors       = sensorManager.getSensorListObservable(Sensor.TYPE_ALL);
-//            List<BaseSensor> baseSensors   = new ArrayList<>();
-//            for (Sensor sensor : sensors) {
-//                BaseSensor baseSensor = SensorFactory.getSensor(sensor, mSensorEventSubject);
-//                //TODO register sensors
-////                sensorManager.registerListener(this,
-////                        sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-////                        SensorManager.SENSOR_DELAY_NORMAL);
-//                if(baseSensor != null) {
-//                    baseSensors.add(baseSensor);
-//                }
-//            }
-//
-//            e.onSuccess(baseSensors);
-//        }).subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread());
-//        return listSingle;
-//    }
+    @Override
+    public void onSensorDataPublished(String sensorData) {
+        Log.i(TAG, "onSensorDataPublished -> sensor data: " + sensorData);
+    }
 }

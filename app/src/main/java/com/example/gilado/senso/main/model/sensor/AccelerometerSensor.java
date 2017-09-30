@@ -2,6 +2,7 @@ package com.example.gilado.senso.main.model.sensor;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
 
@@ -36,4 +37,19 @@ public class AccelerometerSensor extends BaseSensor {
         return false;
     }
 
+    @Override
+    protected String getProcessedData(SensorEvent sensorEvent) {
+        float[] values = sensorEvent.values;
+        // Movement
+        float x = values[0];
+        float y = values[1];
+        float z = values[2];
+
+        return x + " , " + y + " , " + z;
+    }
+
+    @Override
+    protected SensorEventListener getSensorListener() {
+        return this;
+    }
 }

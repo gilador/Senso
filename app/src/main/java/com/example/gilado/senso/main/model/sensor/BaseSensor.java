@@ -4,8 +4,11 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Handler;
 import android.util.Log;
 
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.PublishSubject;
 
 /**
@@ -27,7 +30,10 @@ abstract public class BaseSensor implements SensorEventListener {
 
     public BaseSensor(Sensor sensor, ISensorObserver sensorObserver) {
         mSensor = sensor;
-        mSensorEventSubject.doOnNext(sensorEvent -> sensorObserver.onSensorEvent(getId(), sensorEvent)).filter(this::filterEvent);
+        mSensorEventSubject.subscribeOn(Schedulers.computation())
+                .filter(this::filterEvent)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(sensorEvent -> sensorObserver.onSensorEvent(getId(), extractData(sensorEvent)));
     }
 
     //----------------------------------------------------------------------------------------------
@@ -35,6 +41,9 @@ abstract public class BaseSensor implements SensorEventListener {
     //----------------------------------------------------------------------------------------------
 
     protected abstract boolean applyThreshHold(SensorEvent ev);
+
+    protected abstract String getProcessedData(SensorEvent sensorEvent);
+
 
     //----------------------------------------------------------------------------------------------
     //                                 Impl SensorEventListener
@@ -46,8 +55,12 @@ abstract public class BaseSensor implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-        Log.d(TAG, "onSensorChanged");
+        Log.d(this.getClass().getSimpleName(), "onSensorChanged");
         mSensorEventSubject.onNext(sensorEvent);
+    }
+
+    public boolean isEnabled() {
+        return mEnabled;
     }
 
     //----------------------------------------------------------------------------------------------
@@ -57,9 +70,6 @@ abstract public class BaseSensor implements SensorEventListener {
         mEnabled = enabled;
     }
 
-    public boolean isEnabled() {
-        return mEnabled;
-    }
     public Sensor getSensor() {
         return mSensor;
     }
@@ -68,15 +78,25 @@ abstract public class BaseSensor implements SensorEventListener {
         return mSensor.getName().hashCode();
     }
 
-    public boolean connect(SensorManager sensorManager) {
-        return sensorManager.registerListener(this,
-                sensorManager.getDefaultSensor(mSensor.getType()),
-                SensorManager.SENSOR_DELAY_UI);
+    public void connect(SensorManager sensorManager, Handler handler) {
+        handler.post(() -> {
+            sensorManager.registerListener(getSensorListener(),
+                    sensorManager.getDefaultSensor(mSensor.getType()),
+                    SensorManager.SENSOR_DELAY_UI);
+        });
     }
 
-    public void disconnect(SensorManager sensorManager) {
-        sensorManager.unregisterListener(this);
+    public void disconnect(SensorManager sensorManager, Handler handler) {
+        handler.post(() -> {
+            sensorManager.unregisterListener(getSensorListener(), mSensor);
+        });
     }
+
+    //----------------------------------------------------------------------------------------------
+    //                                 Protected methods
+    //----------------------------------------------------------------------------------------------
+
+    protected  SensorEventListener getSensorListener(){return this;}
 
     //----------------------------------------------------------------------------------------------
     //                                 Private methods
@@ -84,5 +104,14 @@ abstract public class BaseSensor implements SensorEventListener {
 
     private boolean filterEvent(SensorEvent ev) {
         return ev.sensor.getType() == mSensor.getType() && applyThreshHold(ev);
+    }
+
+    private String extractData(SensorEvent sensorEvent) {
+        String processedData = getProcessedData(sensorEvent);
+        return getSimpleName() + " : " + processedData;
+    }
+
+    private String getSimpleName() {
+        return mSensor.getVendor() + " " + mSensor.getName();
     }
 }

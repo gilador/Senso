@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.gilado.senso.R;
-import com.example.gilado.senso.main.IMain.IMainView;
+import com.example.gilado.senso.main.moduleInterface.IMain.IMainView;
 import com.example.gilado.senso.main.model.sensor.BaseSensor;
 
 import java.util.ArrayList;

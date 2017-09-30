@@ -1,6 +1,6 @@
-package com.example.gilado.senso.main.IMain;
+package com.example.gilado.senso.main.moduleInterface.IMain;
 
-import com.example.gilado.senso.main.IMain.Interactor.IMainViewInteractor;
+import com.example.gilado.senso.main.moduleInterface.IMain.Interactor.IMainViewInteractor;
 import com.example.gilado.senso.main.model.sensor.BaseSensor;
 
 /**

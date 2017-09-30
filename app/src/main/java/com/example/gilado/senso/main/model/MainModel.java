@@ -1,13 +1,12 @@
 package com.example.gilado.senso.main.model;
 
 import android.hardware.Sensor;
-import android.hardware.SensorEvent;
 import android.hardware.SensorManager;
 
-import com.example.gilado.senso.main.IMain.IMainModel;
 import com.example.gilado.senso.main.model.sensor.BaseSensor;
 import com.example.gilado.senso.main.model.sensor.ISensorObserver;
 import com.example.gilado.senso.main.model.sensor.SensorFactory;
+import com.example.gilado.senso.main.moduleInterface.IMain.IMainModel;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -15,20 +14,27 @@ import java.util.List;
 import java.util.Set;
 
 import io.reactivex.Observable;
-import io.reactivex.subjects.PublishSubject;
 
 /**
  * Created by gilado on 9/23/2017.
  */
 
-public class MainModel implements IMainModel {
+abstract class MainModel implements IMainModel {
 
+    protected IMainModelListener mMainPresenter;
     private Set<Integer> mSelectedSensorsId = new HashSet<>();
     private Observable<List<BaseSensor>> mSensorsObservable;
-    private final PublishSubject<Integer> mSensorsSelectedSubject = PublishSubject.create();
-    private final PublishSubject<Integer> mSensorsUnselectedSubject = PublishSubject.create();
-    private IMainModelListener mMainPresenter;
 
+    //----------------------------------------------------------------------------------------------
+    //                                 Abstract methods
+    //----------------------------------------------------------------------------------------------
+    protected abstract void onSensorStart(int sensorId);
+
+    protected abstract void onSensorStop(int sensorId);
+
+    //----------------------------------------------------------------------------------------------
+    //                                 Impl IMainModel
+    //----------------------------------------------------------------------------------------------
     @Override
     public void setPresenter(IMainModelListener mainPresenter) {
         mMainPresenter = mainPresenter;
@@ -58,47 +64,35 @@ public class MainModel implements IMainModel {
     }
 
     @Override
-    public PublishSubject<Integer> getSensorsSelectedSubject() {
-        return mSensorsSelectedSubject;
-    }
-
-    @Override
-    public PublishSubject<Integer> getSensorsUnselectedSubject() {
-        return mSensorsUnselectedSubject;
-    }
-
-    @Override
     public void onSensorSelected(int sensorId) {
         mSelectedSensorsId.add(sensorId);
-        getSensorsSelectedSubject().onNext(sensorId);
+        onSensorStart(sensorId);
     }
 
     @Override
     public void onSensorUnselected(int sensorId) {
         if (mSelectedSensorsId.contains(sensorId)) {
             mSelectedSensorsId.remove(sensorId);
-            getSensorsUnselectedSubject().onNext(sensorId);
         }
+        onSensorStop(sensorId);
+
+        //TODO send file to server
     }
 
     @Override
-    public void onSensorAdded(BaseSensor sensor) {
-        //TODO
+    public void onResume() {
     }
 
     @Override
-    public void onSensorRemoved(BaseSensor sensor) {
-        //TODO
+    public void onPause() {
+        //TODO close all writers
     }
 
-    @Override
-    public void onSensorEvent(int sensorId, SensorEvent sensorEvent) {
-        //TODO write to sensor file
+    public void publishSensorData(String sensorData) {
+
+        //TODO networking
+
+        mMainPresenter.onSensorDataPublished(sensorData);
+
     }
-
-
-    //-----------------------------------------------------------------------------------------------
-    //                          Private Methods
-    //-----------------------------------------------------------------------------------------------
-
 }
