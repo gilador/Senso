@@ -16,11 +16,11 @@ import io.reactivex.subjects.PublishSubject;
  */
 
 abstract public class BaseSensor implements SensorEventListener {
-    public static final String TAG = BaseSensor.class.getSimpleName();
+    protected static final String TAG = BaseSensor.class.getSimpleName();
 
     private final PublishSubject<SensorEvent> mSensorEventSubject = PublishSubject.create();
 
-    private Sensor mSensor;
+    protected Sensor mSensor;
 
     private boolean mEnabled;
 
@@ -102,8 +102,8 @@ abstract public class BaseSensor implements SensorEventListener {
     //                                 Private methods
     //----------------------------------------------------------------------------------------------
 
-    private boolean filterEvent(SensorEvent ev) {
-        return ev.sensor.getType() == mSensor.getType() && applyThreshHold(ev);
+    protected boolean filterEvent(SensorEvent ev) {
+        return applyThreshHold(ev);
     }
 
     private String extractData(SensorEvent sensorEvent) {

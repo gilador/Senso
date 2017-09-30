@@ -8,6 +8,7 @@ import com.example.gilado.senso.main.model.sensor.ISensorObserver;
 import com.example.gilado.senso.main.model.sensor.SensorFactory;
 import com.example.gilado.senso.main.moduleInterface.IMain.IMainModel;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -19,7 +20,7 @@ import io.reactivex.Observable;
  * Created by gilado on 9/23/2017.
  */
 
-abstract class MainModel implements IMainModel {
+public abstract class MainModel implements IMainModel {
 
     protected IMainModelListener mMainPresenter;
     private Set<Integer> mSelectedSensorsId = new HashSet<>();
@@ -31,6 +32,8 @@ abstract class MainModel implements IMainModel {
     protected abstract void onSensorStart(int sensorId);
 
     protected abstract void onSensorStop(int sensorId);
+
+    protected abstract String publishSensorData(BaseSensor sensorId) throws FileNotFoundException;
 
     //----------------------------------------------------------------------------------------------
     //                                 Impl IMainModel
@@ -70,13 +73,19 @@ abstract class MainModel implements IMainModel {
     }
 
     @Override
-    public void onSensorUnselected(int sensorId) {
-        if (mSelectedSensorsId.contains(sensorId)) {
-            mSelectedSensorsId.remove(sensorId);
+    public void onSensorUnselected(BaseSensor sensor) {
+        if (mSelectedSensorsId.contains(sensor)) {
+            mSelectedSensorsId.remove(sensor);
         }
-        onSensorStop(sensorId);
+        onSensorStop(sensor.getId());
+        String publishedData = "";
+        try {
+            publishedData = publishSensorData(sensor);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        mMainPresenter.onSensorDataPublished(publishedData);
 
-        //TODO send file to server
     }
 
     @Override
@@ -86,13 +95,5 @@ abstract class MainModel implements IMainModel {
     @Override
     public void onPause() {
         //TODO close all writers
-    }
-
-    public void publishSensorData(String sensorData) {
-
-        //TODO networking
-
-        mMainPresenter.onSensorDataPublished(sensorData);
-
     }
 }

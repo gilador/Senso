@@ -16,11 +16,12 @@ public class AmbientTempSensor extends BaseSensor {
 
     @Override
     protected boolean applyThreshHold(SensorEvent ev) {
-        return false;
+        return true;
     }
 
     @Override
     protected String getProcessedData(SensorEvent sensorEvent) {
-        return null;
+        float ambient_temperature = sensorEvent.values[0];
+        return ambient_temperature + "";
     }
 }

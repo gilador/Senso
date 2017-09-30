@@ -1,23 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="204dp"
-    android:layout_height="200dp"
-    android:layout_margin="1dp">
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:layout_width="204dp"
+                android:layout_height="200dp"
+                android:layout_margin="1dp">
 
     <TextView
         android:id="@+id/name"
-        android:gravity="center"
-        android:layout_centerInParent="true"
-        android:textColor="@android:color/white"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:textColor="@android:color/white"/>
 
     <TextView
-        android:id="@+id/vandor"
-        android:layout_below="@+id/name"
-        android:gravity="center"
-        android:layout_centerInParent="true"
-        android:textColor="@android:color/white"
+        android:id="@+id/vendor"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/name"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:textColor="@android:color/white"/>
+
 </RelativeLayout>

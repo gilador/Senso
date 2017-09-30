@@ -20,6 +20,6 @@ public class LightSensor extends BaseSensor {
 
     @Override
     protected String getProcessedData(SensorEvent sensorEvent) {
-        return null;
+        return sensorEvent.values[0] + "";
     }
 }

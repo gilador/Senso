@@ -21,7 +21,7 @@ public interface IMainModelInteractor {
 
     void onSensorSelected(int sensorId);
 
-    void onSensorUnselected(int sensorId);
+    void onSensorUnselected(BaseSensor sensorId);
 
     void onSensorEvent(int sensorId, String sensorEvent);
 

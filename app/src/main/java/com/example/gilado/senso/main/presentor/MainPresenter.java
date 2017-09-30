@@ -94,7 +94,7 @@ public class MainPresenter implements IMainPresenter, ISensorObserver {
     public void onSensorTileUnSelected(BaseSensor sensor) {
         sensor.disconnect(mSensorManager, mHandler);
         sensor.setEnabled(false);
-        mMainModel.onSensorUnselected(sensor.getId());
+        mMainModel.onSensorUnselected(sensor);
         mMainView.onTileStateChanged(sensor.getId(), false);
 
 

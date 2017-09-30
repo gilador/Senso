@@ -9,7 +9,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.example.gilado.senso.R;
-import com.example.gilado.senso.main.model.FileMainModel;
+import com.example.gilado.senso.main.model.fileModel.FileMainModel;
+import com.example.gilado.senso.main.model.fileModel.filePublisher.FireBasePublisher;
 import com.example.gilado.senso.main.presentor.MainPresenter;
 
 public class MainActivity extends AppCompatActivity {
@@ -18,7 +19,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         MainView view = setupUi();
-        new MainPresenter(new FileMainModel(), view, new Handler(Looper.getMainLooper()), getApplicationContext(), (SensorManager) getSystemService(SENSOR_SERVICE));
+        new MainPresenter(new FileMainModel(new FireBasePublisher()), view, new Handler(Looper.getMainLooper()), getApplicationContext(), (SensorManager) getSystemService(SENSOR_SERVICE));
 
     }
 

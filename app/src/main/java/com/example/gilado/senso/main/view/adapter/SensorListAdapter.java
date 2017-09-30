@@ -105,7 +105,7 @@ public class SensorListAdapter extends RecyclerView.Adapter<SensorListAdapter.Se
         public SensorViewHolder(View view) {
             super(view);
             name = view.findViewById(R.id.name);
-            vendor = view.findViewById(R.id.vandor);
+            vendor = view.findViewById(R.id.vendor);
         }
     }
 

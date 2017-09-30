@@ -20,6 +20,14 @@ public class GyroSensor extends BaseSensor {
 
     @Override
     protected String getProcessedData(SensorEvent sensorEvent) {
-        return null;
+        String data = "Orientation X (Roll) :" +
+                Float.toString(sensorEvent.values[2]) +
+                "," +
+                "Orientation Y (Pitch) :" +
+                Float.toString(sensorEvent.values[1]) +
+                ", " +
+                "Orientation Z (Yaw) :" +
+                Float.toString(sensorEvent.values[0]);
+        return data;
     }
 }

@@ -1,9 +1,16 @@
-package com.example.gilado.senso.main.model;
+package com.example.gilado.senso.main.model.fileModel;
 
 import android.content.Context;
+import android.hardware.Sensor;
 import android.support.annotation.NonNull;
 
+import com.example.gilado.senso.main.model.MainModel;
+import com.example.gilado.senso.main.model.fileModel.filePublisher.FireBasePublisher;
+import com.example.gilado.senso.main.model.fileModel.filePublisher.IFilePublisher;
+import com.example.gilado.senso.main.model.sensor.BaseSensor;
+
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -20,17 +27,23 @@ import java.util.TimeZone;
 
 public class FileMainModel extends MainModel {
 
-    private Map<Integer, FileOutputStream> mWritersMap;
+    private final IFilePublisher                 publisher;
+    private       Map<Integer, FileOutputStream> mWritersMap;
+
+    public FileMainModel(FireBasePublisher fireBasePublisher) {
+        super();
+        publisher = fireBasePublisher;
+    }
 
 
     @Override
     protected void onSensorStart(int sensorId) {
-        if(mWritersMap == null){
+        if (mWritersMap == null) {
             mWritersMap = new Hashtable<>();
         }
 
         try {
-            mWritersMap.put(sensorId, mMainPresenter.getContext().openFileOutput(getFileName(sensorId), Context.MODE_APPEND));
+            mWritersMap.put(sensorId, mMainPresenter.getContext().openFileOutput(getInternalFileName(sensorId), Context.MODE_APPEND));
         } catch (IOException e) {
             //TODO notify UI filOe failed to create
             e.printStackTrace();
@@ -42,13 +55,24 @@ public class FileMainModel extends MainModel {
         FileOutputStream writer = mWritersMap.get(sensorId);
         try {
             writer.close();
-            String sensorData = getSensorData(sensorId);
-            publishSensorData(sensorData);
-
-
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    protected String publishSensorData(BaseSensor sensor) throws FileNotFoundException {
+        FileInputStream reader;
+        reader = mMainPresenter.getContext().openFileInput(getInternalFileName(sensor.getId()));
+
+
+        publisher.publish(reader, getExternalFileName(sensor.getSensor()), getInternalFileName(sensor.getId()));
+        try {
+            return (getSensorData(sensor.getId()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "test";
     }
 
     @Override
@@ -69,15 +93,14 @@ public class FileMainModel extends MainModel {
 
     private String getSensorData(int sensorId) throws IOException {
         FileInputStream reader;
-        reader = mMainPresenter.getContext().openFileInput(getFileName(sensorId));
+        reader = mMainPresenter.getContext().openFileInput(getInternalFileName(sensorId));
 
         StringBuilder builder = new StringBuilder("");
 
         byte[] buffer = new byte[1024];
 
         int n;
-        while ((n = reader.read(buffer)) != -1)
-        {
+        while ((n = reader.read(buffer)) != -1) {
             builder.append(new String(buffer, 0, n));
         }
 
@@ -100,7 +123,12 @@ public class FileMainModel extends MainModel {
     }
 
     @NonNull
-    private String getFileName(int sensorId) {
-        return sensorId+".txt";
+    private String getInternalFileName(int sensorId) {
+        return sensorId + ".txt";
+    }
+
+    @NonNull
+    private String getExternalFileName(Sensor sensor) {
+        return getTime() + " " + sensor.getName() + ".txt";
     }
 }
