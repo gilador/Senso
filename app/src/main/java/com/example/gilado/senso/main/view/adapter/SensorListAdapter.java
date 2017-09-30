@@ -2,7 +2,6 @@ package com.example.gilado.senso.main.view.adapter;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,11 +9,13 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.gilado.senso.R;
+import com.example.gilado.senso.main.IMain.IMainView;
 import com.example.gilado.senso.main.model.sensor.BaseSensor;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
-import java.util.Random;
+import java.util.Map;
 
 /**
  * Created by gilado on 9/24/2017.
@@ -22,13 +23,15 @@ import java.util.Random;
 
 public class SensorListAdapter extends RecyclerView.Adapter<SensorListAdapter.SensorViewHolder> {
 
-    private List<BaseSensor> mData = new ArrayList<>(2);
-    private int[] mTileColors;
+    private IMainView.IMainViewListener mPresenter;
+    private List<BaseSensor>      mData                = new ArrayList<>(2);
+    private Map<Integer, Integer> mTilePositionByIdMap = new Hashtable<>(8);
+    private int[]   mTileColors;
     private boolean colorsInit;
 
     @Override
     public SensorViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        if(!colorsInit){
+        if (!colorsInit) {
             initColors(parent.getContext());
         }
 
@@ -40,9 +43,29 @@ public class SensorListAdapter extends RecyclerView.Adapter<SensorListAdapter.Se
 
     @Override
     public void onBindViewHolder(SensorViewHolder holder, int position) {
-        holder.name.setText(mData.get(position).getSensor().getName());
+        BaseSensor baseSensor = mData.get(position);
+        mTilePositionByIdMap.put(baseSensor.getId(), position);
+
+        //TODO
+        holder.name.setText(baseSensor.getSensor().getName() + baseSensor.isEnabled());
+        holder.vendor.setText(baseSensor.getSensor().getVendor());
+        holder.itemView.setOnClickListener(view -> {
+            boolean newState = !baseSensor.isEnabled();
+            if (newState) {
+                mPresenter.onSensorTileSelected(baseSensor);
+            } else {
+                mPresenter.onSensorTileUnSelected(baseSensor);
+            }
+            holder.itemView.setSelected(!holder.itemView.isSelected());
+//
+//            if (holder.itemView.isSelected()) {
+//                mPresenter.onSensorTileSelected(baseSensor);
+//            } else {
+//                mPresenter.onSensorTileUnSelected(baseSensor);
+//            }
+        });
+
         setBackgroundColor(holder, position);
-//        holder.itemView.setBackgroundResource(R.color.tile2);
     }
 
     /**
@@ -63,16 +86,27 @@ public class SensorListAdapter extends RecyclerView.Adapter<SensorListAdapter.Se
         notifyDataSetChanged();
     }
 
+    public void updateState(Integer id, boolean isSelected) {
+        int sensorPosition = mTilePositionByIdMap.get(id);
+        mData.get(sensorPosition).setEnabled(isSelected);
+        notifyItemChanged(sensorPosition);
+    }
+
+    public void setPresenter(IMainView.IMainViewListener presenter) {
+        mPresenter = presenter;
+    }
+
 
     public class SensorViewHolder extends RecyclerView.ViewHolder {
 
         public TextView name;
+        public TextView vendor;
 
         public SensorViewHolder(View view) {
             super(view);
             name = view.findViewById(R.id.name);
+            vendor = view.findViewById(R.id.vandor);
         }
-
     }
 
     //----------------------------------------------------------------------------------------------
@@ -84,8 +118,8 @@ public class SensorListAdapter extends RecyclerView.Adapter<SensorListAdapter.Se
         holder.itemView.setBackgroundColor(mTileColors[selectedTilePosition]);
     }
 
-    private void initColors(Context context){
-        TypedArray ta     = context.getResources().obtainTypedArray(R.array.tilesColors);
+    private void initColors(Context context) {
+        TypedArray ta = context.getResources().obtainTypedArray(R.array.tilesColors);
         mTileColors = new int[ta.length()];
         for (int i = 0; i < ta.length(); i++) {
             mTileColors[i] = ta.getColor(i, 0);
@@ -93,6 +127,6 @@ public class SensorListAdapter extends RecyclerView.Adapter<SensorListAdapter.Se
 
         colorsInit = true;
 
-       ta.recycle();
+        ta.recycle();
     }
 }

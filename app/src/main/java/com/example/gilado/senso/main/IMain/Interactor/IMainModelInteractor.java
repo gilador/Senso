@@ -5,6 +5,7 @@ import android.hardware.SensorManager;
 
 import com.example.gilado.senso.main.IMain.IMainModel;
 import com.example.gilado.senso.main.model.sensor.BaseSensor;
+import com.example.gilado.senso.main.model.sensor.ISensorObserver;
 
 import java.util.List;
 
@@ -18,15 +19,19 @@ import io.reactivex.subjects.PublishSubject;
 public interface IMainModelInteractor {
     void setPresenter(IMainModel.IMainModelListener mainPresenter);
 
-    Observable<List<BaseSensor>> getGeneralSensorList(SensorManager sensorManager, PublishSubject<SensorEvent> sensorEventSubject);
+    Observable<List<BaseSensor>> getSensorListObservable(SensorManager sensorManager, ISensorObserver sensorObserver);
 
-    Observable<List<BaseSensor>> getSelectedSensors();
+    PublishSubject<Integer> getSensorsSelectedSubject();
+
+    PublishSubject<Integer> getSensorsUnselectedSubject();
 
     void onSensorAdded(BaseSensor sensor);
 
     void onSensorRemoved(BaseSensor sensor);
 
-    void onSensorSelected(BaseSensor sensor);
+    void onSensorSelected(int sensorId);
 
-    void onSensorUnselected(BaseSensor sensor);
+    void onSensorUnselected(int sensorId);
+
+    void onSensorEvent(int sensorId, SensorEvent sensorEvent);
 }

@@ -6,16 +6,15 @@ import android.hardware.SensorManager;
 
 import com.example.gilado.senso.main.IMain.IMainModel;
 import com.example.gilado.senso.main.model.sensor.BaseSensor;
+import com.example.gilado.senso.main.model.sensor.ISensorObserver;
 import com.example.gilado.senso.main.model.sensor.SensorFactory;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import io.reactivex.Observable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.PublishSubject;
 
 /**
@@ -24,10 +23,11 @@ import io.reactivex.subjects.PublishSubject;
 
 public class MainModel implements IMainModel {
 
-    private Map<Integer, BaseSensor> mBaseSensorMap = new Hashtable<>();
-    private Observable<List<BaseSensor>> mSelectedSensorsObservable;
-    private Observable<List<BaseSensor>> mGeneralSensorsObservable;
-    private IMainModelListener           mMainPresenter;
+    private Set<Integer> mSelectedSensorsId = new HashSet<>();
+    private Observable<List<BaseSensor>> mSensorsObservable;
+    private final PublishSubject<Integer> mSensorsSelectedSubject = PublishSubject.create();
+    private final PublishSubject<Integer> mSensorsUnselectedSubject = PublishSubject.create();
+    private IMainModelListener mMainPresenter;
 
     @Override
     public void setPresenter(IMainModelListener mainPresenter) {
@@ -35,68 +35,65 @@ public class MainModel implements IMainModel {
     }
 
     @Override
-    public Observable<List<BaseSensor>> getSelectedSensors() {
-        if (mSelectedSensorsObservable == null) {
-            mSelectedSensorsObservable = Observable.create(e -> {
-                e.onNext(new ArrayList<>(mBaseSensorMap.values()));
+    public Observable<List<BaseSensor>> getSensorListObservable(SensorManager sensorManager, ISensorObserver sensorObserver) {
+        if (mSensorsObservable == null) {
+            mSensorsObservable = Observable.create(e -> {
+                List<Sensor>     deviceSensors    = sensorManager.getSensorList(Sensor.TYPE_ALL);
+                List<BaseSensor> returnSensorList = new ArrayList<>();
+
+                for (Sensor sensor : deviceSensors) {
+                    BaseSensor baseSensor = SensorFactory.getSensor(sensor, sensorObserver);
+
+                    if (baseSensor != null) {
+                        boolean isSelected = mSelectedSensorsId.contains(baseSensor.getId());
+                        baseSensor.setEnabled(isSelected);
+                        returnSensorList.add(baseSensor);
+                    }
+                }
+                e.onNext(returnSensorList);
             });
         }
-        return mSelectedSensorsObservable;
+
+        return mSensorsObservable;
     }
 
     @Override
-    public Observable<List<BaseSensor>> getGeneralSensorList(SensorManager sensorManager, PublishSubject<SensorEvent> sensorEventSubject) {
-        if (mGeneralSensorsObservable == null) {
-            mGeneralSensorsObservable = Observable.create(e -> {
-                List<Sensor>     sensors     = sensorManager.getSensorList(Sensor.TYPE_ALL);
-                List<BaseSensor> baseSensors = new ArrayList<>();
-                for (Sensor sensor : sensors) {
-                    BaseSensor baseSensor = SensorFactory.getSensor(sensor, sensorEventSubject);
-                    //TODO register sensors
-//                sensorManager.registerListener(this,
-//                        sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-//                        SensorManager.SENSOR_DELAY_NORMAL);
-                    if (baseSensor != null) {
-                        baseSensors.add(baseSensor);
-                    }
-                }
+    public PublishSubject<Integer> getSensorsSelectedSubject() {
+        return mSensorsSelectedSubject;
+    }
 
-                e.onNext(baseSensors);
-            });
+    @Override
+    public PublishSubject<Integer> getSensorsUnselectedSubject() {
+        return mSensorsUnselectedSubject;
+    }
+
+    @Override
+    public void onSensorSelected(int sensorId) {
+        mSelectedSensorsId.add(sensorId);
+        getSensorsSelectedSubject().onNext(sensorId);
+    }
+
+    @Override
+    public void onSensorUnselected(int sensorId) {
+        if (mSelectedSensorsId.contains(sensorId)) {
+            mSelectedSensorsId.remove(sensorId);
+            getSensorsUnselectedSubject().onNext(sensorId);
         }
-
-        return mGeneralSensorsObservable;
     }
 
     @Override
     public void onSensorAdded(BaseSensor sensor) {
-        if (!mBaseSensorMap.containsKey(sensor.getSensor().getType())) {
-            mBaseSensorMap.put(sensor.getId(), sensor);
-        }
+        //TODO
     }
 
     @Override
     public void onSensorRemoved(BaseSensor sensor) {
-        if (mBaseSensorMap.containsKey(sensor.getSensor().getType())) {
-            mBaseSensorMap.remove(sensor.getId());
-        }
+        //TODO
     }
 
     @Override
-    public void onSensorSelected(BaseSensor sensor) {
-        if (hasSensor(sensor)) {
-            //TODO change to notify for single sensor change
-            mSelectedSensorsObservable = Observable.create(e -> e.onNext(new ArrayList<>(mBaseSensorMap.values())));
-        }
-    }
-
-    @Override
-    public void onSensorUnselected(BaseSensor sensor) {
-        if (hasSensor(sensor)) {
-            //TODO change to notify for single sensor change
-            mSelectedSensorsObservable = Observable.create(e -> e.onNext(new ArrayList<>(mBaseSensorMap.values())));
-
-        }
+    public void onSensorEvent(int sensorId, SensorEvent sensorEvent) {
+        //TODO write to sensor file
     }
 
 
@@ -104,7 +101,4 @@ public class MainModel implements IMainModel {
     //                          Private Methods
     //-----------------------------------------------------------------------------------------------
 
-    private boolean hasSensor(BaseSensor sensor) {
-        return mBaseSensorMap.containsKey(sensor.getId());
-    }
 }

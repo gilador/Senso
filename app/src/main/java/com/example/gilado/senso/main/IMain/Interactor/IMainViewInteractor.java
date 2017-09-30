@@ -1,5 +1,7 @@
 package com.example.gilado.senso.main.IMain.Interactor;
 
+import android.hardware.SensorEvent;
+
 import com.example.gilado.senso.main.IMain.IMainView;
 import com.example.gilado.senso.main.model.sensor.BaseSensor;
 
@@ -11,7 +13,10 @@ import java.util.List;
 
 public interface IMainViewInteractor {
     void setPresenter(IMainView.IMainViewListener presenter);
-    void showSensorList(List<BaseSensor> sensors);
 
-    void onSelectedSensorLoad(List<BaseSensor> baseSensors);
+    void onSensorListChange(List<BaseSensor> sensors);
+
+    void onSensorEvent(int sensorId, SensorEvent sensorEvent);
+
+    void onTileStateChanged(Integer id, boolean isSelected);
 }
