@@ -11,6 +11,7 @@ import android.widget.TextView;
 import com.example.gilado.senso.R;
 import com.example.gilado.senso.main.moduleInterface.IMain.IMainView;
 import com.example.gilado.senso.main.model.sensor.BaseSensor;
+import com.github.yongjhih.mismeter.MisMeter;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -47,8 +48,9 @@ public class SensorListAdapter extends RecyclerView.Adapter<SensorListAdapter.Se
         mTilePositionByIdMap.put(baseSensor.getId(), position);
 
         //TODO
-        holder.name.setText(baseSensor.getSensor().getName() + baseSensor.isEnabled());
+        holder.name.setText(baseSensor.getSensor().getName() + "\n" + printState(baseSensor.isEnabled()));
         holder.vendor.setText(baseSensor.getSensor().getVendor());
+        holder.misMeter.setProgress(0.5F);
         holder.itemView.setOnClickListener(view -> {
             boolean newState = !baseSensor.isEnabled();
             if (newState) {
@@ -57,12 +59,6 @@ public class SensorListAdapter extends RecyclerView.Adapter<SensorListAdapter.Se
                 mPresenter.onSensorTileUnSelected(baseSensor);
             }
             holder.itemView.setSelected(!holder.itemView.isSelected());
-//
-//            if (holder.itemView.isSelected()) {
-//                mPresenter.onSensorTileSelected(baseSensor);
-//            } else {
-//                mPresenter.onSensorTileUnSelected(baseSensor);
-//            }
         });
 
         setBackgroundColor(holder, position);
@@ -97,18 +93,6 @@ public class SensorListAdapter extends RecyclerView.Adapter<SensorListAdapter.Se
     }
 
 
-    public class SensorViewHolder extends RecyclerView.ViewHolder {
-
-        public TextView name;
-        public TextView vendor;
-
-        public SensorViewHolder(View view) {
-            super(view);
-            name = view.findViewById(R.id.name);
-            vendor = view.findViewById(R.id.vendor);
-        }
-    }
-
     //----------------------------------------------------------------------------------------------
     //                          Private methods
     //----------------------------------------------------------------------------------------------
@@ -128,5 +112,25 @@ public class SensorListAdapter extends RecyclerView.Adapter<SensorListAdapter.Se
         colorsInit = true;
 
         ta.recycle();
+    }
+
+    public class SensorViewHolder extends RecyclerView.ViewHolder {
+
+        TextView name;
+        TextView vendor;
+        MisMeter misMeter;
+
+        public SensorViewHolder(View view) {
+            super(view);
+            name = view.findViewById(R.id.name);
+            vendor = view.findViewById(R.id.vendor);
+            misMeter = view.findViewById(R.id.meter);
+
+        }
+    }
+
+    //Temp code until
+    private String printState(boolean enabled) {
+        return enabled ? "ON" : "OFF";
     }
 }

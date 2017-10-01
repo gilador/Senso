@@ -40,7 +40,6 @@ public class MainPresenter implements IMainPresenter, ISensorObserver {
         mHandler = handler;
         mContext = applicationContext;
         mSensorManager = sensorManager;
-
         mMainView.setPresenter(this);
         mMainModel.setPresenter(this);
     }
@@ -56,6 +55,7 @@ public class MainPresenter implements IMainPresenter, ISensorObserver {
     @Override
     public void onViewResume() {
         mMainModel.onResume();//TODO maybe should be in base class
+        //TODO dispose!!
         mMainModel.getSensorListObservable(mSensorManager, this).subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(baseSensors -> {
@@ -68,6 +68,7 @@ public class MainPresenter implements IMainPresenter, ISensorObserver {
     @Override
     public void onViewPause() {
         mMainModel.onPause();  //TODO maybe should be in base class
+        //TODO dispose!!
         mMainModel.getSensorListObservable(mSensorManager, this).subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(baseSensors -> {
