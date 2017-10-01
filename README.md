@@ -4,4 +4,4 @@ In this project I`ll demonstrate a MVP implementation of an App that uses that l
 and send reports to a FirBase account`s storage
 
 
-![Screenshot](https://user-images.githubusercontent.com/8309205/31058255-7dc52fb8-a6f9-11e7-9b33-2e15021cc0ed.png)
+![Screenshot](![senso_main_screen_small](https://user-images.githubusercontent.com/8309205/31058275-b4f41468-a6f9-11e7-91bc-87cab04d4058.png))
