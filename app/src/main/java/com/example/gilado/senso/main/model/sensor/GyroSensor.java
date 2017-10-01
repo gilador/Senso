@@ -3,6 +3,8 @@ package com.example.gilado.senso.main.model.sensor;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 
+import com.example.gilado.senso.R;
+
 /**
  * Created by gilado on 9/29/2017.
  */
@@ -29,5 +31,10 @@ public class GyroSensor extends BaseSensor {
                 "Orientation Z (Yaw) :" +
                 Float.toString(sensorEvent.values[0]);
         return data;
+    }
+
+    @Override
+    public int getIconResId() {
+        return R.mipmap.gyroscope;
     }
 }

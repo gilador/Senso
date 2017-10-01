@@ -6,12 +6,13 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.gilado.senso.R;
-import com.example.gilado.senso.main.moduleInterface.IMain.IMainView;
 import com.example.gilado.senso.main.model.sensor.BaseSensor;
-import com.github.yongjhih.mismeter.MisMeter;
+import com.example.gilado.senso.main.moduleInterface.IMain.IMainView;
+import com.skyfishjy.library.RippleBackground;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -47,10 +48,18 @@ public class SensorListAdapter extends RecyclerView.Adapter<SensorListAdapter.Se
         BaseSensor baseSensor = mData.get(position);
         mTilePositionByIdMap.put(baseSensor.getId(), position);
 
-        //TODO
+        holder.itemView.setBackgroundColor(getColorByPos(position));
+        //TODO remove flag from text
         holder.name.setText(baseSensor.getSensor().getName() + "\n" + printState(baseSensor.isEnabled()));
         holder.vendor.setText(baseSensor.getSensor().getVendor());
-        holder.misMeter.setProgress(0.5F);
+        holder.icon.setImageResource(baseSensor.getIconResId());
+        holder.icon.setColorFilter(getColorByPos(position), android.graphics.PorterDuff.Mode.MULTIPLY);
+        if(baseSensor.isEnabled()){
+            holder.iconRippleContainer.startRippleAnimation();
+        }
+        else{
+            holder.iconRippleContainer.stopRippleAnimation();
+        }
         holder.itemView.setOnClickListener(view -> {
             boolean newState = !baseSensor.isEnabled();
             if (newState) {
@@ -60,8 +69,6 @@ public class SensorListAdapter extends RecyclerView.Adapter<SensorListAdapter.Se
             }
             holder.itemView.setSelected(!holder.itemView.isSelected());
         });
-
-        setBackgroundColor(holder, position);
     }
 
     /**
@@ -96,10 +103,10 @@ public class SensorListAdapter extends RecyclerView.Adapter<SensorListAdapter.Se
     //----------------------------------------------------------------------------------------------
     //                          Private methods
     //----------------------------------------------------------------------------------------------
-    private void setBackgroundColor(SensorViewHolder holder, int position) {
-        int selectedTilePosition = (position) % mTileColors.length;
 
-        holder.itemView.setBackgroundColor(mTileColors[selectedTilePosition]);
+    private int getColorByPos(int position) {
+        int selectedTilePosition = (position) % mTileColors.length;
+        return mTileColors[selectedTilePosition];
     }
 
     private void initColors(Context context) {
@@ -114,23 +121,29 @@ public class SensorListAdapter extends RecyclerView.Adapter<SensorListAdapter.Se
         ta.recycle();
     }
 
+    //Temp code until
+    private String printState(boolean enabled) {
+        return enabled ? "ON" : "OFF";
+    }
+
+    //----------------------------------------------------------------------------------------------
+    //                          Private Inner Classes
+    //----------------------------------------------------------------------------------------------
+
     public class SensorViewHolder extends RecyclerView.ViewHolder {
 
-        TextView name;
-        TextView vendor;
-        MisMeter misMeter;
+        TextView         name;
+        TextView         vendor;
+        ImageView        icon;
+        RippleBackground iconRippleContainer;
 
         public SensorViewHolder(View view) {
             super(view);
             name = view.findViewById(R.id.name);
             vendor = view.findViewById(R.id.vendor);
-            misMeter = view.findViewById(R.id.meter);
+            icon = view.findViewById(R.id.icon);
+            iconRippleContainer = view.findViewById(R.id.iconRippleContainer);
 
         }
-    }
-
-    //Temp code until
-    private String printState(boolean enabled) {
-        return enabled ? "ON" : "OFF";
     }
 }

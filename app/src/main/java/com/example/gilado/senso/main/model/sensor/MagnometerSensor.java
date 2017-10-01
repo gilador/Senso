@@ -4,6 +4,8 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorManager;
 
+import com.example.gilado.senso.R;
+
 /**
  * Created by gilado on 9/29/2017.
  */
@@ -41,5 +43,10 @@ public class MagnometerSensor extends BaseSensor {
         String data = "Field X :" + A_W[0] + ", Y :" + A_W[1] + ", Z :" + A_W[2];
 
         return data;
+    }
+
+    @Override
+    public int getIconResId() {
+        return R.mipmap.magnometer;
     }
 }

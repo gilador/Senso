@@ -44,6 +44,8 @@ abstract public class BaseSensor implements SensorEventListener {
 
     protected abstract String getProcessedData(SensorEvent sensorEvent);
 
+    public abstract int getIconResId();
+
 
     //----------------------------------------------------------------------------------------------
     //                                 Impl SensorEventListener

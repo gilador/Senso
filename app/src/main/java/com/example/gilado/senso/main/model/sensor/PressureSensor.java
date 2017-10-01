@@ -3,6 +3,8 @@ package com.example.gilado.senso.main.model.sensor;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 
+import com.example.gilado.senso.R;
+
 /**
  * Created by gilado on 9/29/2017.
  */
@@ -20,5 +22,10 @@ public class PressureSensor extends BaseSensor {
     @Override
     protected String getProcessedData(SensorEvent sensorEvent) {
         return null;
+    }
+
+    @Override
+    public int getIconResId() {
+        return R.mipmap.pressure;
     }
 }

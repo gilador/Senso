@@ -6,6 +6,8 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
 
+import com.example.gilado.senso.R;
+
 /**
  * Created by gilado on 9/25/2017.
  */
@@ -46,6 +48,11 @@ public class AccelerometerSensor extends BaseSensor {
         float z = values[2];
 
         return x + " , " + y + " , " + z;
+    }
+
+    @Override
+    public int getIconResId() {
+        return R.mipmap.accelometer;
     }
 
     @Override
