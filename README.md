@@ -4,4 +4,4 @@ In this project I`ll demonstrate a MVP implementation of an App that uses that l
 and send reports to a FirBase account`s storage
 
 
-![ScreenShot](https://drive.google.com/file/d/0B4OJtUkJFq4lM1MySmhEZGptbnc/preview "Optional title")
+https://user-images.githubusercontent.com/8309205/31054586-08d84be4-a6be-11e7-870f-9a8dc6c26e12.png
